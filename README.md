@@ -3,12 +3,12 @@
 This is a rust based smart contract which is deployed to ICP local test network which performs the functionalities as asked.
 The functions are:
 1. Send Tokens:
-○ Users is able to send tokens to other addresses.
+ Users is able to send tokens to other addresses.
 2. Receive Tokens:
-○ The wallet is able to receive tokens and update the balance
+ The wallet is able to receive tokens and update the balance
 accordingly.
 3. Balance Display:
-○ Shows the current token balance of the wallet
+ Shows the current token balance of the wallet
 
 
 ## Running the project locally
