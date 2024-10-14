@@ -1,5 +1,10 @@
 service : {
-  "init_token": (text, text, nat64) -> ();
-  "get_balance": (principal) -> (nat64) query;
+  "init_token": (text, text, nat64, nat8) -> ();
+  "balance_of": (principal) -> (nat64) query;
+  "total_supply": () -> (nat64) query;
+  "symbol": () -> (text) query;
+  "name": () -> (text) query;
+  "decimals": () -> (nat8) query;
   "transfer": (principal, nat64) -> (variant { Ok: null; Err: text });
+  "whoami": () -> (principal);
 }
