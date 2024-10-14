@@ -34,15 +34,22 @@ Lets Run a simple test case where we
 dfx canister call rust_hello_backend init_token '( "TEST", "Test Token", 1000000, 8 )'
 
 # Checking if the number of tokens are minted
-dfx canister call rust_hello_backend balance_of '(principal "5efnn-telku-74vvo-k7d22-adlyf-p4kkz-ehcns-3dxsp-s5x5m-okk6e-yae")'
+dfx canister call rust_hello_backend balance_of '(principal <sender's principal ID>)'
 
 # Using the transfer function to transfer 50000 tokens to another account
-dfx canister call rust_hello_backend transfer '(principal "pslmo-vbi5f-lrz6s-m5ocl-a75r3-7vszq-kn64o-4ucje-hfud5-aeiaf-kae", 50000)'
+dfx canister call rust_hello_backend transfer '(principal <receiver's principal ID>, 50000)'
 
 # Checking the balance of the senders account
-dfx canister call rust_hello_backend balance_of '(principal "5efnn-telku-74vvo-k7d22-adlyf-p4kkz-ehcns-3dxsp-s5x5m-okk6e-yae")'
+dfx canister call rust_hello_backend balance_of '(principal <sender's principal ID>)'
 
 # Checking the balance of the recipient account
-dfx canister call rust_hello_backend balance_of '(principal "pslmo-vbi5f-lrz6s-m5ocl-a75r3-7vszq-kn64o-4ucje-hfud5-aeiaf-kae")'
+dfx canister call rust_hello_backend balance_of '(principal <receiver's principal ID>)'
 
+```
+
+In order to run the test (basic.bats) code follow the command below:
+
+```bash
+#This will run the test file to check if all the functions are working as expected or not
+bats src/rust_hello_backend/tests/basic.bats
 ```
