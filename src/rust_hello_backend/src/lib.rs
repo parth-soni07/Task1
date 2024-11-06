@@ -1,148 +1,62 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use std::collections::HashMap;
-use ic_cdk::export::Principal;
+mod icrc2;
+// mod icrc2;
 
-#[derive(CandidType, Deserialize, Clone)]
-pub struct Token {
-    pub symbol: String,
-    pub name: String,
-    pub total_supply: u64,
-    pub owner: Principal,
-    pub decimals: u8,
-}
+use icrc2::*;
+// use icrc2::{TokenExtended, Allowance, TransactionLog};
 
-pub struct TokenSimple {
-    balances: HashMap<Principal, u64>,
-    total_supply: u64,
-    decimals: u8,
-    name: String,
-    symbol: String,
-}
+// use ic_cdk::export::Principal;
+// use std::cell::RefCell;
 
-impl TokenSimple {
-    pub fn new(owner: Principal, total_supply: u64, decimals: u8, name: String, symbol: String) -> Self {
-        let mut balances = HashMap::new();
-        balances.insert(owner, total_supply); // Assign the total supply to the owner.
-        Self {
-            balances,
-            total_supply,
-            decimals,
-            name,
-            symbol,
-        }
-    }
+// thread_local! {
+//     static TOKEN_SIMPLE: RefCell<Option<TokenSimple>> = RefCell::new(None);
+//     static TOKEN_EXTENDED: RefCell<Option<TokenExtended>> = RefCell::new(None);
+// }
 
-    pub fn balance_of(&self, user: Principal) -> u64 {
-        *self.balances.get(&user).unwrap_or(&0)
-    }
+// #[ic_cdk_macros::update]
+// fn init_token(symbol: String, name: String, total_supply: u64, decimals: u8) {
+//     let owner = ic_cdk::caller();
+//     TOKEN_SIMPLE.with(|token| {
+//         *token.borrow_mut() = Some(TokenSimple::new(owner, total_supply, decimals, name, symbol));
+//     });
+// }
 
-    pub fn total_supply(&self) -> u64 {
-        self.total_supply
-    }
+// #[ic_cdk_macros::update]
+// fn init_token_extended(symbol: String, name: String, total_supply: u64, decimals: u8, fee: u64, url: String) {
+//     let owner = ic_cdk::caller();
+//     let base_token = TokenSimple::new(owner, total_supply, decimals, name, symbol);
+//     TOKEN_EXTENDED.with(|token| {
+//         *token.borrow_mut() = Some(TokenExtended::new(base_token));
+//     });
+// }
 
-    pub fn decimals(&self) -> u8 {
-        self.decimals
-    }
+// #[ic_cdk_macros::update]
+// fn approve(spender: Principal, amount: u64) -> Result<(), String> {
+//     let owner = ic_cdk::caller();
+//     TOKEN_EXTENDED.with(|token| {
+//         token.borrow_mut().as_mut().ok_or("Token not initialized".to_string())?
+//             .approve(owner, spender, amount)
+//     })
+// }
 
-    pub fn symbol(&self) -> String {
-        self.symbol.clone()
-    }
+// #[ic_cdk_macros::query]
+// fn allowance(owner: Principal, spender: Principal) -> u64 {
+//     TOKEN_EXTENDED.with(|token| {
+//         token.borrow().as_ref().map(|t| t.allowance(owner, spender)).unwrap_or(0)
+//     })
+// }
 
-    pub fn name(&self) -> String {
-        self.name.clone()
-    }
+// #[ic_cdk_macros::update]
+// fn transfer_from(owner: Principal, to: Principal, amount: u64) -> Result<(), String> {
+//     let spender = ic_cdk::caller();
+//     TOKEN_EXTENDED.with(|token| {
+//         token.borrow_mut().as_mut().ok_or("Token not initialized".to_string())?
+//             .transfer_from(owner, spender, to, amount)
+//     })
+// }
 
-    pub fn transfer(&mut self, from: Principal, to: Principal, amount: u64) -> Result<(), String> {
-        let from_balance = self.balances.get(&from).unwrap_or(&0);
-        if *from_balance < amount {
-            return Err("Insufficient balance".to_string());
-        }
-        *self.balances.entry(from).or_insert(0) -= amount;
-        *self.balances.entry(to).or_insert(0) += amount;
-        Ok(())
-    }
-}
-
-thread_local! {
-    static TOKEN_SIMPLE: std::cell::RefCell<Option<TokenSimple>> = std::cell::RefCell::new(None);
-}
-
-#[ic_cdk_macros::update]
-fn init_token(symbol: String, name: String, total_supply: u64, decimals: u8) {
-    let owner = ic_cdk::caller();
-    TOKEN_SIMPLE.with(|token| {
-        *token.borrow_mut() = Some(TokenSimple::new(owner, total_supply, decimals, name, symbol));
-    });
-}
-
-#[ic_cdk_macros::query]
-fn balance_of(user: Principal) -> u64 {
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(t) = token.borrow().as_ref() {
-            t.balance_of(user)
-        } else {
-            0
-        }
-    })
-}
-
-#[ic_cdk_macros::query]
-fn total_supply() -> u64 {
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(t) = token.borrow().as_ref() {
-            t.total_supply()
-        } else {
-            0
-        }
-    })
-}
-
-#[ic_cdk_macros::query]
-fn symbol() -> String {
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(t) = token.borrow().as_ref() {
-            t.symbol()
-        } else {
-            "".to_string()
-        }
-    })
-}
-
-#[ic_cdk_macros::query]
-fn name() -> String {
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(t) = token.borrow().as_ref() {
-            t.name()
-        } else {
-            "".to_string()
-        }
-    })
-}
-
-#[ic_cdk_macros::query]
-fn decimals() -> u8 {
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(t) = token.borrow().as_ref() {
-            t.decimals()
-        } else {
-            0
-        }
-    })
-}
-
-#[ic_cdk_macros::update]
-fn transfer(to: Principal, amount: u64) -> Result<(), String> {
-    let from = ic_cdk::caller();
-    TOKEN_SIMPLE.with(|token| {
-        if let Some(ref mut t) = token.borrow_mut().as_mut() {
-            t.transfer(from, to, amount)
-        } else {
-            Err("Token not initialized".to_string())
-        }
-    })
-}
-
-#[ic_cdk_macros::query]
-fn whoami() -> Principal {
-    ic_cdk::caller()
-}
+// #[ic_cdk_macros::query]
+// fn get_transaction_logs() -> Vec<TransactionLog> {
+//     TOKEN_EXTENDED.with(|token| {
+//         token.borrow().as_ref().map(|t| t.get_transaction_logs().clone()).unwrap_or_else(Vec::new)
+//     })
+// }
